@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CareerOS — Personal Career Management Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+  --bg: #07090f;
+  --surface: #0f1219;
+  --surface2: #161b26;
+  --surface3: #1d2535;
+  --border: #252f45;
+  --accent: #6c63ff;
+  --gold: #f59e0b;
+  --green: #10b981;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --pink: #ec4899;
+  --text: #e8eaf0;
+  --muted: #5a6478;
+  --radius: 14px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;}
+
+/* SIDEBAR */
+.sidebar{
+  width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto;
+}
+.sidebar-brand{padding:24px 20px 16px;border-bottom:1px solid var(--border);}
+.sidebar-brand h1{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--accent);line-height:1;}
+.sidebar-brand p{font-size:0.7rem;color:var(--muted);margin-top:3px;}
+.sidebar-nav{padding:12px 10px;flex:1;}
+.nav-section{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);padding:12px 10px 6px;font-weight:600;}
+.nav-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;
+  cursor:pointer;font-size:0.83rem;color:var(--muted);transition:all 0.15s;margin-bottom:2px;
+  border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;
+}
+.nav-item:hover{background:var(--surface2);color:var(--text);}
+.nav-item.active{background:rgba(108,99,255,0.15);color:var(--accent);}
+.nav-item .icon{font-size:1rem;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--accent);color:white;border-radius:50px;padding:1px 7px;font-size:0.65rem;font-weight:700;}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;padding:28px 24px 60px;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* PAGE HEADER */
+.page-header{margin-bottom:28px;}
+.page-header h2{font-family:'Playfair Display',serif;font-size:1.8rem;color:var(--text);margin-bottom:4px;}
+.page-header p{font-size:0.85rem;color:var(--muted);}
+.page-header-row{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;}
+
+/* BUTTONS */
+.btn{
+  padding:10px 20px;border-radius:50px;font-family:'DM Sans',sans-serif;font-weight:600;
+  font-size:0.85rem;cursor:pointer;transition:all 0.15s;border:none;
+}
+.btn-primary{background:var(--accent);color:white;}
+.btn-primary:hover{opacity:0.9;}
+.btn-sm{padding:6px 14px;font-size:0.78rem;}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.btn-outline:hover{border-color:var(--accent);color:var(--accent);}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;position:relative;overflow:hidden;}
+.stat-card::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.stat-card.c1::after{background:var(--accent);}
+.stat-card.c2::after{background:var(--gold);}
+.stat-card.c3::after{background:var(--green);}
+.stat-card.c4::after{background:var(--red);}
+.stat-card.c5::after{background:var(--blue);}
+.stat-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:700;line-height:1;margin-bottom:4px;}
+.stat-card.c1 .stat-num{color:var(--accent);}
+.stat-card.c2 .stat-num{color:var(--gold);}
+.stat-card.c3 .stat-num{color:var(--green);}
+.stat-card.c4 .stat-num{color:var(--red);}
+.stat-card.c5 .stat-num{color:var(--blue);}
+.stat-label{font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.card-title{font-family:'Playfair Display',serif;font-size:1rem;margin-bottom:16px;color:var(--text);}
+
+/* TABLE */
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:0.83rem;}
+th{text-align:left;padding:10px 12px;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);border-bottom:1px solid var(--border);font-weight:600;}
+td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+/* STATUS BADGES */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:50px;font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;}
+.badge::before{content:'';width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.b-Interested{background:rgba(139,92,246,0.15);color:#a78bfa;}.b-Interested::before{background:#a78bfa;}
+.b-Applied{background:rgba(59,130,246,0.15);color:#60a5fa;}.b-Applied::before{background:#60a5fa;}
+.b-Assessment{background:rgba(245,158,11,0.15);color:#fbbf24;}.b-Assessment::before{background:#fbbf24;}
+.b-PhoneScreen{background:rgba(251,146,60,0.15);color:#fb923c;}.b-PhoneScreen::before{background:#fb923c;}
+.b-Interview1{background:rgba(34,211,238,0.15);color:#22d3ee;}.b-Interview1::before{background:#22d3ee;}
+.b-Interview2{background:rgba(99,102,241,0.15);color:#818cf8;}.b-Interview2::before{background:#818cf8;}
+.b-FinalInterview{background:rgba(168,85,247,0.15);color:#c084fc;}.b-FinalInterview::before{background:#c084fc;}
+.b-Offer{background:rgba(16,185,129,0.15);color:#34d399;}.b-Offer::before{background:#34d399;}
+.b-Rejected{background:rgba(239,68,68,0.15);color:#f87171;}.b-Rejected::before{background:#f87171;}
+.b-Withdrawn{background:rgba(107,114,128,0.15);color:#9ca3af;}.b-Withdrawn::before{background:#9ca3af;}
+
+/* KANBAN */
+.kanban-board{display:flex;gap:12px;overflow-x:auto;padding-bottom:16px;}
+.kanban-col{min-width:200px;width:200px;flex-shrink:0;}
+.kanban-header{padding:10px 12px;border-radius:10px 10px 0 0;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;display:flex;justify-content:space-between;align-items:center;}
+.kanban-body{background:var(--surface2);border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px;padding:10px;min-height:200px;display:flex;flex-direction:column;gap:8px;}
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;cursor:pointer;transition:all 0.15s;}
+.kanban-card:hover{border-color:var(--accent);transform:translateY(-1px);}
+.kanban-card .kc-title{font-size:0.82rem;font-weight:600;margin-bottom:4px;}
+.kanban-card .kc-company{font-size:0.72rem;color:var(--muted);}
+.kanban-card .kc-date{font-size:0.68rem;color:var(--muted);margin-top:6px;}
+.k-Interested{background:rgba(139,92,246,0.2);color:#a78bfa;}
+.k-Applied{background:rgba(59,130,246,0.2);color:#60a5fa;}
+.k-Interview{background:rgba(34,211,238,0.2);color:#22d3ee;}
+.k-Offer{background:rgba(16,185,129,0.2);color:#34d399;}
+.k-Rejected{background:rgba(239,68,68,0.2);color:#f87171;}
+
+/* FORM */
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);font-weight:600;margin-bottom:5px;}
+.form-group input,.form-group select,.form-group textarea{
+  width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;
+  padding:10px 14px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.88rem;
+  outline:none;transition:border-color 0.2s;color-scheme:dark;
+}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);}
+.form-group textarea{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn 0.2s ease;}
+.modal-overlay.hidden{display:none;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:600px;max-height:90vh;overflow-y:auto;animation:scaleIn 0.2s ease;}
+.modal h3{font-family:'Playfair Display',serif;font-size:1.4rem;color:var(--accent);margin-bottom:20px;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end;}
+
+/* INTERVIEW TRACKER */
+.interview-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin-bottom:12px;transition:all 0.15s;}
+.interview-card:hover{border-color:var(--accent);}
+.interview-card .ic-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.interview-card .ic-title{font-weight:600;font-size:0.95rem;}
+.interview-card .ic-meta{font-size:0.78rem;color:var(--muted);margin-top:2px;}
+.stars{color:var(--gold);font-size:0.9rem;}
+
+/* NETWORKING */
+.contact-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;display:flex;gap:14px;align-items:flex-start;margin-bottom:10px;transition:all 0.15s;}
+.contact-card:hover{border-color:var(--accent);}
+.contact-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--pink));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;flex-shrink:0;}
+.contact-info{flex:1;}
+.contact-name{font-weight:600;font-size:0.9rem;}
+.contact-role{font-size:0.78rem;color:var(--muted);margin-top:1px;}
+.contact-tags{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+
+/* FOLLOW UP */
+.followup-item{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:10px;display:flex;gap:14px;align-items:center;}
+.followup-icon{font-size:1.5rem;flex-shrink:0;}
+.followup-info{flex:1;}
+.followup-title{font-weight:600;font-size:0.88rem;}
+.followup-desc{font-size:0.78rem;color:var(--muted);margin-top:2px;}
+.followup-urgent{border-color:var(--red);}
+.followup-warn{border-color:var(--gold);}
+
+/* DASHBOARD CHARTS */
+.charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:24px;}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;}
+.chart-card h4{font-size:0.82rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin-bottom:16px;font-weight:600;}
+
+/* SKILL GAP */
+.skill-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+.skill-name{width:100px;font-size:0.82rem;flex-shrink:0;}
+.skill-bar-wrap{flex:1;height:8px;background:var(--surface2);border-radius:50px;overflow:hidden;position:relative;}
+.skill-bar{height:100%;border-radius:50px;transition:width 0.8s ease;}
+.skill-level{width:50px;font-size:0.72rem;color:var(--muted);text-align:right;flex-shrink:0;}
+.skill-gap-tag{font-size:0.65rem;padding:2px 8px;border-radius:50px;font-weight:700;}
+.gap-high{background:rgba(239,68,68,0.15);color:#f87171;}
+.gap-ok{background:rgba(16,185,129,0.15);color:#34d399;}
+.gap-med{background:rgba(245,158,11,0.15);color:#fbbf24;}
+
+/* EMPTY */
+.empty{text-align:center;padding:48px 24px;color:var(--muted);}
+.empty .e-icon{font-size:3rem;margin-bottom:12px;}
+
+/* TAGS */
+.tag{display:inline-block;font-size:0.68rem;padding:2px 8px;border-radius:50px;font-weight:600;background:var(--surface2);color:var(--muted);border:1px solid var(--border);}
+.tag-green{background:rgba(16,185,129,0.1);color:#34d399;border-color:rgba(16,185,129,0.2);}
+.tag-blue{background:rgba(59,130,246,0.1);color:#60a5fa;border-color:rgba(59,130,246,0.2);}
+.tag-red{background:rgba(239,68,68,0.1);color:#f87171;border-color:rgba(239,68,68,0.2);}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:12px 18px;font-size:0.85rem;color:var(--text);box-shadow:0 8px 30px rgba(0,0,0,0.4);z-index:200;animation:slideToast 0.3s ease;max-width:280px;}
+.toast.hide{animation:hideToast 0.3s ease forwards;}
+
+/* MOBILE */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:8px;z-index:50;justify-content:space-around;}
+.mobile-nav-btn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 10px;border-radius:8px;cursor:pointer;font-size:0.6rem;color:var(--muted);border:none;background:none;font-family:'DM Sans',sans-serif;}
+.mobile-nav-btn .icon{font-size:1.2rem;}
+.mobile-nav-btn.active{color:var(--accent);}
+
+@media(max-width:768px){
+  .sidebar{display:none;}
+  .mobile-nav{display:flex;}
+  .main{padding:16px 12px 80px;}
+  .form-row,.form-row3{grid-template-columns:1fr;}
+  .stats-row{grid-template-columns:1fr 1fr;}
+  .kanban-board{flex-wrap:nowrap;}
+}
+
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
+@keyframes slideToast{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes hideToast{to{opacity:0;transform:translateY(20px);}}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-10px);}to{opacity:1;transform:translateY(0);}}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-brand">
+    <h1>CareerOS</h1>
+    <p>Career Management Platform</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section">Main</div>
+    <button class="nav-item active" onclick="showPage('dashboard')"><span class="icon">📊</span>Dashboard</button>
+    <button class="nav-item" onclick="showPage('tracker')"><span class="icon">📋</span>Applications<span class="nav-badge" id="app-badge">0</span></button>
+    <button class="nav-item" onclick="showPage('kanban')"><span class="icon">🗂️</span>Kanban Board</button>
+    <div class="nav-section">Preparation</div>
+    <button class="nav-item" onclick="showPage('interviews')"><span class="icon">🎤</span>Interviews</button>
+    <button class="nav-item" onclick="showPage('followups')"><span class="icon">🔔</span>Follow-ups<span class="nav-badge" id="fu-badge" style="background:var(--red)">0</span></button>
+    <button class="nav-item" onclick="showPage('networking')"><span class="icon">🤝</span>Networking</button>
+    <div class="nav-section">Analysis</div>
+    <button class="nav-item" onclick="showPage('skillgap')"><span class="icon">📈</span>Skill Gap</button>
+  </nav>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- ===== DASHBOARD ===== -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <h2>Dashboard 📊</h2>
+      <p>Your career search at a glance</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-card c1"><div class="stat-num" id="d-total">0</div><div class="stat-label">Applications</div></div>
+      <div class="stat-card c2"><div class="stat-num" id="d-interviews">0</div><div class="stat-label">Interviews</div></div>
+      <div class="stat-card c3"><div class="stat-num" id="d-offers">0</div><div class="stat-label">Offers</div></div>
+      <div class="stat-card c4"><div class="stat-num" id="d-rejected">0</div><div class="stat-label">Rejected</div></div>
+      <div class="stat-card c5"><div class="stat-num" id="d-rate">0%</div><div class="stat-label">Interview Rate</div></div>
+    </div>
+
+    <div class="charts-grid">
+      <div class="chart-card"><h4>Applications by Status</h4><canvas id="chart-status" height="200"></canvas></div>
+      <div class="chart-card"><h4>Applications by Job Type</h4><canvas id="chart-type" height="200"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">🔔 Urgent Follow-ups</div>
+      <div id="dash-followups"></div>
+    </div>
+  </div>
+
+  <!-- ===== TRACKER ===== -->
+  <div class="page" id="page-tracker">
+    <div class="page-header">
+      <div class="page-header-row">
+        <div>
+          <h2>Applications 📋</h2>
+          <p>Track every job application in one place</p>
+        </div>
+        <button class="btn btn-primary" onclick="openAppModal()">+ Add Application</button>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <div style="position:relative;flex:1;min-width:180px;">
+        <span style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);">🔍</span>
+        <input style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px 9px 36px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.85rem;outline:none;" placeholder="Search company or title..." id="app-search" oninput="renderApps()">
+      </div>
+      <select style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 14px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:0.82rem;outline:none;color-scheme:dark;" id="app-filter" onchange="renderApps()">
+        <option value="All">All Statuses</option>
+        <option>Interested</option><option>Applied</option><option>Assessment</option>
+        <option>Phone Screen</option><option>Interview 1</option><option>Interview 2</option>
+        <option>Final Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option>
+      </select>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Company</th><th>Job Title</th><th>Location</th><th>Status</th>
+              <th>Date</th><th>Salary</th><th>Type</th><th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="apps-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== KANBAN ===== -->
+  <div class="page" id="page-kanban">
+    <div class="page-header">
+      <h2>Kanban Board 🗂️</h2>
+      <p>Visual workflow management — like Jira</p>
+    </div>
+    <div class="kanban-board" id="kanban-board"></div>
+  </div>
+
+  <!-- ===== INTERVIEWS ===== -->
+  <div class="page" id="page-interviews">
+    <div class="page-header">
+      <div class="page-header-row">
+        <div>
+          <h2>Interview Tracker 🎤</h2>
+          <p>Your personal interview knowledge base</p>
+        </div>
+        <button class="btn btn-primary" onclick="openIntModal()">+ Log Interview</button>
+      </div>
+    </div>
+    <div id="interviews-list"></div>
+  </div>
+
+  <!-- ===== FOLLOW-UPS ===== -->
+  <div class="page" id="page-followups">
+    <div class="page-header">
+      <h2>Follow-up Reminders 🔔</h2>
+      <p>Never miss a follow-up opportunity</p>
+    </div>
+    <div id="followups-list"></div>
+  </div>
+
+  <!-- ===== NETWORKING ===== -->
+  <div class="page" id="page-networking">
+    <div class="page-header">
+      <div class="page-header-row">
+        <div>
+          <h2>Networking Tracker 🤝</h2>
+          <p>Track recruiters, mentors, and hiring managers</p>
+        </div>
+        <button class="btn btn-primary" onclick="openContactModal()">+ Add Contact</button>
+      </div>
+    </div>
+    <div id="contacts-list"></div>
+  </div>
+
+  <!-- ===== SKILL GAP ===== -->
+  <div class="page" id="page-skillgap">
+    <div class="page-header">
+      <div class="page-header-row">
+        <div>
+          <h2>Skill Gap Analysis 📈</h2>
+          <p>Compare your skills vs market demand</p>
+        </div>
+        <button class="btn btn-primary" onclick="openSkillModal()">+ Add Skill</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">Your Skills vs Market Demand</div>
+      <div id="skill-gap-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">🎯 Learning Opportunities</div>
+      <div id="learning-list"></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MOBILE NAV -->
+<div class="mobile-nav">
+  <button class="mobile-nav-btn active" onclick="showPage('dashboard')"><span class="icon">📊</span>Dashboard</button>
+  <button class="mobile-nav-btn" onclick="showPage('tracker')"><span class="icon">📋</span>Jobs</button>
+  <button class="mobile-nav-btn" onclick="showPage('kanban')"><span class="icon">🗂️</span>Board</button>
+  <button class="mobile-nav-btn" onclick="showPage('interviews')"><span class="icon">🎤</span>Interviews</button>
+  <button class="mobile-nav-btn" onclick="showPage('networking')"><span class="icon">🤝</span>Network</button>
+</div>
+
+<!-- ===== APPLICATION MODAL ===== -->
+<div class="modal-overlay hidden" id="appModal">
+  <div class="modal">
+    <h3 id="appModalTitle">Add Application</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Company Name *</label><input id="a-company" placeholder="e.g. Accenture"></div>
+      <div class="form-group"><label>Job Title *</label><input id="a-title" placeholder="e.g. Business Analyst"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Location</label><input id="a-location" placeholder="e.g. Toronto, ON"></div>
+      <div class="form-group"><label>Salary Range</label><input id="a-salary" placeholder="e.g. $60k - $80k"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Job Type</label>
+        <select id="a-type"><option>Remote</option><option>Hybrid</option><option>Onsite</option></select>
+      </div>
+      <div class="form-group"><label>Application Date</label><input type="date" id="a-date"></div>
+    </div>
+    <div class="form-group"><label>Application Status</label>
+      <select id="a-status">
+        <option>Interested</option><option selected>Applied</option><option>Assessment</option>
+        <option>Phone Screen</option><option>Interview 1</option><option>Interview 2</option>
+        <option>Final Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Recruiter Name</label><input id="a-recruiter" placeholder="e.g. Jane Smith"></div>
+      <div class="form-group"><label>Recruiter Contact</label><input id="a-recruiter-contact" placeholder="email or phone"></div>
+    </div>
+    <div class="form-group"><label>Job Posting Link</label><input id="a-url" placeholder="Paste URL here"></div>
+    <div class="form-group"><label>Notes</label><textarea id="a-notes" placeholder="Interview dates, referrals, key requirements..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('appModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveApp()">Save Application</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== INTERVIEW MODAL ===== -->
+<div class="modal-overlay hidden" id="intModal">
+  <div class="modal">
+    <h3>Log Interview</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Company *</label><input id="i-company" placeholder="Company name"></div>
+      <div class="form-group"><label>Interview Date</label><input type="date" id="i-date"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Interview Type</label>
+        <select id="i-type"><option>Phone Screen</option><option>Video Call</option><option>Onsite</option><option>Technical</option><option>Panel</option><option>Final</option></select>
+      </div>
+      <div class="form-group"><label>Interviewer Name</label><input id="i-interviewer" placeholder="e.g. John Smith"></div>
+    </div>
+    <div class="form-group"><label>Questions Asked</label><textarea id="i-questions" placeholder="List the questions you were asked..."></textarea></div>
+    <div class="form-group"><label>Performance Rating (1-5 stars)</label>
+      <select id="i-rating"><option value="1">⭐ 1 - Poor</option><option value="2">⭐⭐ 2 - Fair</option><option value="3" selected>⭐⭐⭐ 3 - Good</option><option value="4">⭐⭐⭐⭐ 4 - Very Good</option><option value="5">⭐⭐⭐⭐⭐ 5 - Excellent</option></select>
+    </div>
+    <div class="form-group"><label>Lessons Learned</label><textarea id="i-lessons" placeholder="What would you do differently next time?"></textarea></div>
+    <div class="form-group"><label>Follow-up Sent?</label>
+      <select id="i-followup"><option>No</option><option>Yes</option></select>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('intModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveInterview()">Save Interview</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CONTACT MODAL ===== -->
+<div class="modal-overlay hidden" id="contactModal">
+  <div class="modal">
+    <h3>Add Contact</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Name *</label><input id="c-name" placeholder="Full name"></div>
+      <div class="form-group"><label>Role</label>
+        <select id="c-role"><option>Recruiter</option><option>Hiring Manager</option><option>Mentor</option><option>Referral</option><option>Colleague</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Company</label><input id="c-company" placeholder="Company name"></div>
+      <div class="form-group"><label>LinkedIn</label><input id="c-linkedin" placeholder="LinkedIn URL or username"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Last Contact Date</label><input type="date" id="c-last"></div>
+      <div class="form-group"><label>Follow-up Date</label><input type="date" id="c-next"></div>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="c-notes" placeholder="How you met, topics discussed..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('contactModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveContact()">Save Contact</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SKILL MODAL ===== -->
+<div class="modal-overlay hidden" id="skillModal">
+  <div class="modal">
+    <h3>Add Skill</h3>
+    <div class="form-group"><label>Skill Name *</label><input id="sk-name" placeholder="e.g. SQL, Power BI, Python"></div>
+    <div class="form-row">
+      <div class="form-group"><label>Your Level</label>
+        <select id="sk-mine"><option value="25">Beginner</option><option value="50" selected>Intermediate</option><option value="75">Advanced</option><option value="95">Expert</option></select>
+      </div>
+      <div class="form-group"><label>Market Demand</label>
+        <select id="sk-market"><option value="25">Low</option><option value="50">Medium</option><option value="75" selected>High</option><option value="95">Very High</option></select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal('skillModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveSkill()">Add Skill</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ========== DATA ==========
+let data = JSON.parse(localStorage.getItem('careeros_data') || JSON.stringify({
+  apps: [], interviews: [], contacts: [], skills: [
+    {id:1,name:'SQL',mine:75,market:95},
+    {id:2,name:'Power BI',mine:75,market:80},
+    {id:3,name:'JIRA',mine:75,market:70},
+    {id:4,name:'Python',mine:25,market:85},
+    {id:5,name:'ServiceNow',mine:50,market:60},
+    {id:6,name:'Tableau',mine:25,market:75},
+  ]
+}));
+
+let editAppId = null;
+
+function save() { localStorage.setItem('careeros_data', JSON.stringify(data)); }
+
+// ========== NAVIGATION ==========
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.querySelectorAll('.mobile-nav-btn').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll(`[onclick="showPage('${id}')"]`).forEach(el => el.classList.add('active'));
+
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'tracker') renderApps();
+  if (id === 'kanban') renderKanban();
+  if (id === 'interviews') renderInterviews();
+  if (id === 'followups') renderFollowups();
+  if (id === 'networking') renderContacts();
+  if (id === 'skillgap') renderSkillGap();
+}
+
+// ========== MODALS ==========
+function openAppModal(id = null) {
+  editAppId = id;
+  document.getElementById('appModalTitle').textContent = id ? 'Edit Application' : 'Add Application';
+  if (id) {
+    const a = data.apps.find(a => a.id === id);
+    document.getElementById('a-company').value = a.company;
+    document.getElementById('a-title').value = a.title;
+    document.getElementById('a-location').value = a.location || '';
+    document.getElementById('a-salary').value = a.salary || '';
+    document.getElementById('a-type').value = a.type;
+    document.getElementById('a-date').value = a.date || '';
+    document.getElementById('a-status').value = a.status;
+    document.getElementById('a-recruiter').value = a.recruiter || '';
+    document.getElementById('a-recruiter-contact').value = a.recruiterContact || '';
+    document.getElementById('a-url').value = a.url || '';
+    document.getElementById('a-notes').value = a.notes || '';
+  } else {
+    ['a-company','a-title','a-location','a-salary','a-recruiter','a-recruiter-contact','a-url','a-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('a-status').value = 'Applied';
+    document.getElementById('a-type').value = 'Hybrid';
+    document.getElementById('a-date').value = new Date().toISOString().split('T')[0];
+  }
+  document.getElementById('appModal').classList.remove('hidden');
+}
+
+function openIntModal() {
+  document.getElementById('i-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('intModal').classList.remove('hidden');
+}
+
+function openContactModal() {
+  document.getElementById('c-last').value = new Date().toISOString().split('T')[0];
+  document.getElementById('contactModal').classList.remove('hidden');
+}
+
+function openSkillModal() { document.getElementById('skillModal').classList.remove('hidden'); }
+
+function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target === m) m.classList.add('hidden'); });
+});
+
+// ========== SAVE FUNCTIONS ==========
+function saveApp() {
+  const company = document.getElementById('a-company').value.trim();
+  const title = document.getElementById('a-title').value.trim();
+  if (!company || !title) { showToast('Please fill in Company and Job Title!'); return; }
+
+  const obj = {
+    company, title,
+    location: document.getElementById('a-location').value.trim(),
+    salary: document.getElementById('a-salary').value.trim(),
+    type: document.getElementById('a-type').value,
+    date: document.getElementById('a-date').value,
+    status: document.getElementById('a-status').value,
+    recruiter: document.getElementById('a-recruiter').value.trim(),
+    recruiterContact: document.getElementById('a-recruiter-contact').value.trim(),
+    url: document.getElementById('a-url').value.trim(),
+    notes: document.getElementById('a-notes').value.trim(),
+  };
+
+  if (editAppId) {
+    const idx = data.apps.findIndex(a => a.id === editAppId);
+    data.apps[idx] = { ...data.apps[idx], ...obj };
+    showToast('Application updated! ✅');
+  } else {
+    data.apps.push({ id: Date.now(), added: Date.now(), ...obj });
+    showToast('Application added! 🎉');
+  }
+
+  save(); closeModal('appModal'); renderApps(); updateBadges();
+}
+
+function saveInterview() {
+  const company = document.getElementById('i-company').value.trim();
+  if (!company) { showToast('Please enter a company name!'); return; }
+  data.interviews.push({
+    id: Date.now(),
+    company,
+    date: document.getElementById('i-date').value,
+    type: document.getElementById('i-type').value,
+    interviewer: document.getElementById('i-interviewer').value.trim(),
+    questions: document.getElementById('i-questions').value.trim(),
+    rating: document.getElementById('i-rating').value,
+    lessons: document.getElementById('i-lessons').value.trim(),
+    followup: document.getElementById('i-followup').value,
+  });
+  save(); closeModal('intModal'); renderInterviews();
+  showToast('Interview logged! 🎤');
+}
+
+function saveContact() {
+  const name = document.getElementById('c-name').value.trim();
+  if (!name) { showToast('Please enter a name!'); return; }
+  data.contacts.push({
+    id: Date.now(),
+    name,
+    role: document.getElementById('c-role').value,
+    company: document.getElementById('c-company').value.trim(),
+    linkedin: document.getElementById('c-linkedin').value.trim(),
+    last: document.getElementById('c-last').value,
+    next: document.getElementById('c-next').value,
+    notes: document.getElementById('c-notes').value.trim(),
+  });
+  save(); closeModal('contactModal'); renderContacts();
+  showToast('Contact added! 🤝');
+}
+
+function saveSkill() {
+  const name = document.getElementById('sk-name').value.trim();
+  if (!name) { showToast('Please enter a skill name!'); return; }
+  data.skills.push({
+    id: Date.now(),
+    name,
+    mine: parseInt(document.getElementById('sk-mine').value),
+    market: parseInt(document.getElementById('sk-market').value),
+  });
+  save(); closeModal('skillModal'); renderSkillGap();
+  showToast('Skill added! 📈');
+}
+
+// ========== RENDER APPS ==========
+function renderApps() {
+  const search = (document.getElementById('app-search')?.value || '').toLowerCase();
+  const filter = document.getElementById('app-filter')?.value || 'All';
+
+  let list = data.apps.filter(a => {
+    const ms = filter === 'All' || a.status === filter;
+    const mq = a.company.toLowerCase().includes(search) || a.title.toLowerCase().includes(search);
+    return ms && mq;
+  });
+
+  const tbody = document.getElementById('apps-table-body');
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--muted);">No applications yet. Click "+ Add Application" to start!</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(a => `
+    <tr>
+      <td><strong>${esc(a.company)}</strong>${a.recruiter ? `<div style="font-size:0.72rem;color:var(--muted);">👤 ${esc(a.recruiter)}</div>` : ''}</td>
+      <td>${esc(a.title)}</td>
+      <td style="color:var(--muted);font-size:0.82rem;">${esc(a.location || '—')}</td>
+      <td><span class="badge b-${a.status.replace(/ /g,'')}">${a.status}</span></td>
+      <td style="color:var(--muted);font-size:0.8rem;">${fmtDate(a.date)}</td>
+      <td style="color:var(--green);font-size:0.8rem;">${esc(a.salary || '—')}</td>
+      <td><span class="tag">${a.type}</span></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          ${a.url ? `<a href="${esc(a.url)}" target="_blank" style="font-size:0.75rem;color:var(--blue);text-decoration:none;padding:4px 8px;border:1px solid var(--border);border-radius:6px;">🔗</a>` : ''}
+          <button onclick="openAppModal(${a.id})" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.75rem;">✏️</button>
+          <button onclick="deleteApp(${a.id})" style="background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 8px;cursor:pointer;font-size:0.75rem;">🗑️</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function deleteApp(id) {
+  data.apps = data.apps.filter(a => a.id !== id);
+  save(); renderApps(); updateBadges();
+  showToast('Removed 🗑️');
+}
+
+// ========== KANBAN ==========
+function renderKanban() {
+  const cols = [
+    { key: 'Interested', statuses: ['Interested'], color: 'k-Interested' },
+    { key: 'Applied', statuses: ['Applied', 'Assessment', 'Phone Screen'], color: 'k-Applied' },
+    { key: 'Interview', statuses: ['Interview 1', 'Interview 2', 'Final Interview'], color: 'k-Interview' },
+    { key: 'Offer', statuses: ['Offer'], color: 'k-Offer' },
+    { key: 'Rejected', statuses: ['Rejected', 'Withdrawn'], color: 'k-Rejected' },
+  ];
+
+  document.getElementById('kanban-board').innerHTML = cols.map(col => {
+    const cards = data.apps.filter(a => col.statuses.includes(a.status));
+    return `
+      <div class="kanban-col">
+        <div class="kanban-header ${col.color}">
+          <span>${col.key}</span>
+          <span style="background:rgba(0,0,0,0.2);padding:1px 8px;border-radius:50px;font-size:0.7rem;">${cards.length}</span>
+        </div>
+        <div class="kanban-body">
+          ${cards.length ? cards.map(a => `
+            <div class="kanban-card" onclick="openAppModal(${a.id})">
+              <div class="kc-title">${esc(a.title)}</div>
+              <div class="kc-company">${esc(a.company)}</div>
+              <div class="kc-date">${a.type} ${a.salary ? '· ' + esc(a.salary) : ''}</div>
+              <div style="margin-top:6px;"><span class="badge b-${a.status.replace(/ /g,'')}" style="font-size:0.62rem;">${a.status}</span></div>
+            </div>
+          `).join('') : `<div style="text-align:center;padding:20px;color:var(--muted);font-size:0.78rem;">No items</div>`}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ========== INTERVIEWS ==========
+function renderInterviews() {
+  const el = document.getElementById('interviews-list');
+  if (!data.interviews.length) {
+    el.innerHTML = `<div class="empty"><div class="e-icon">🎤</div><p>No interviews logged yet.</p></div>`;
+    return;
+  }
+  el.innerHTML = data.interviews.map(i => `
+    <div class="interview-card">
+      <div class="ic-header">
+        <div>
+          <div class="ic-title">${esc(i.company)} — ${esc(i.type)}</div>
+          <div class="ic-meta">${i.interviewer ? '👤 ' + esc(i.interviewer) + ' · ' : ''}📅 ${fmtDate(i.date)}</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="stars">${'⭐'.repeat(parseInt(i.rating))}</div>
+          <button onclick="deleteInterview(${i.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;">🗑️</button>
+        </div>
+      </div>
+      ${i.questions ? `<div style="font-size:0.8rem;color:var(--muted);margin-bottom:8px;"><strong style="color:var(--text);">Questions:</strong> ${esc(i.questions)}</div>` : ''}
+      ${i.lessons ? `<div style="font-size:0.8rem;padding:10px;background:rgba(108,99,255,0.08);border-radius:8px;border-left:3px solid var(--accent);"><strong>💡 Lesson:</strong> ${esc(i.lessons)}</div>` : ''}
+      ${i.followup === 'No' ? `<div style="margin-top:8px;"><span class="tag tag-red">⚠️ Follow-up not sent</span></div>` : `<div style="margin-top:8px;"><span class="tag tag-green">✅ Follow-up sent</span></div>`}
+    </div>
+  `).join('');
+}
+
+function deleteInterview(id) {
+  data.interviews = data.interviews.filter(i => i.id !== id);
+  save(); renderInterviews();
+}
+
+// ========== FOLLOW-UPS ==========
+function renderFollowups() {
+  const el = document.getElementById('followups-list');
+  const today = new Date();
+  let items = [];
+
+  data.apps.forEach(a => {
+    if (!a.date) return;
+    const applied = new Date(a.date);
+    const days = Math.floor((today - applied) / (1000 * 60 * 60 * 24));
+
+    if (a.status === 'Applied' && days >= 7) {
+      items.push({ urgent: days >= 14, icon: '📧', title: `Follow up with ${a.company}`, desc: `Applied ${days} days ago as ${a.title}. ${days >= 14 ? '⚠️ Overdue!' : 'Follow-up recommended.'}`, days });
+    }
+    if (['Interview 1','Interview 2','Phone Screen'].includes(a.status)) {
+      items.push({ urgent: false, icon: '🙏', title: `Send thank-you to ${a.company}`, desc: `You had an interview for ${a.title}. Send a thank-you email!`, days: 0 });
+    }
+  });
+
+  data.contacts.forEach(c => {
+    if (!c.next) return;
+    const next = new Date(c.next);
+    const days = Math.floor((today - next) / (1000 * 60 * 60 * 24));
+    if (days >= 0) {
+      items.push({ urgent: true, icon: '🤝', title: `Follow up with ${c.name}`, desc: `${c.role} at ${c.company || 'Unknown'}. Follow-up was due ${days === 0 ? 'today' : days + ' days ago'}.`, days });
+    }
+  });
+
+  document.getElementById('fu-badge').textContent = items.length;
+
+  if (!items.length) {
+    el.innerHTML = `<div class="empty"><div class="e-icon">✅</div><p>No follow-ups needed right now. Great job!</p></div>`;
+    return;
+  }
+
+  items.sort((a, b) => b.days - a.days);
+  el.innerHTML = items.map(i => `
+    <div class="followup-item ${i.urgent ? 'followup-urgent' : 'followup-warn'}">
+      <div class="followup-icon">${i.icon}</div>
+      <div class="followup-info">
+        <div class="followup-title">${esc(i.title)}</div>
+        <div class="followup-desc">${esc(i.desc)}</div>
+      </div>
+      ${i.urgent ? '<span class="tag tag-red">Urgent</span>' : '<span class="tag" style="color:var(--gold);border-color:rgba(245,158,11,0.3);">Soon</span>'}
+    </div>
+  `).join('');
+}
+
+// ========== CONTACTS ==========
+function renderContacts() {
+  const el = document.getElementById('contacts-list');
+  if (!data.contacts.length) {
+    el.innerHTML = `<div class="empty"><div class="e-icon">🤝</div><p>No contacts yet. Start building your network!</p></div>`;
+    return;
+  }
+  el.innerHTML = data.contacts.map(c => `
+    <div class="contact-card">
+      <div class="contact-avatar">${c.name.charAt(0).toUpperCase()}</div>
+      <div class="contact-info">
+        <div class="contact-name">${esc(c.name)}</div>
+        <div class="contact-role">${c.role}${c.company ? ' at ' + esc(c.company) : ''}</div>
+        <div class="contact-tags">
+          ${c.last ? `<span class="tag">Last contact: ${fmtDate(c.last)}</span>` : ''}
+          ${c.next ? `<span class="tag tag-blue">Follow up: ${fmtDate(c.next)}</span>` : ''}
+          ${c.linkedin ? `<a href="${esc(c.linkedin)}" target="_blank" style="text-decoration:none;"><span class="tag tag-blue">🔗 LinkedIn</span></a>` : ''}
+        </div>
+        ${c.notes ? `<div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">${esc(c.notes)}</div>` : ''}
+      </div>
+      <button onclick="deleteContact(${c.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;align-self:flex-start;">🗑️</button>
+    </div>
+  `).join('');
+}
+
+function deleteContact(id) {
+  data.contacts = data.contacts.filter(c => c.id !== id);
+  save(); renderContacts();
+}
+
+// ========== SKILL GAP ==========
+function renderSkillGap() {
+  const el = document.getElementById('skill-gap-list');
+  const learning = document.getElementById('learning-list');
+
+  el.innerHTML = data.skills.map(s => {
+    const gap = s.market - s.mine;
+    const gapTag = gap > 30 ? `<span class="skill-gap-tag gap-high">Gap: ${gap}%</span>` :
+                   gap > 0  ? `<span class="skill-gap-tag gap-med">Small gap</span>` :
+                               `<span class="skill-gap-tag gap-ok">✓ Strong</span>`;
+    return `
+      <div class="skill-row">
+        <div class="skill-name">${esc(s.name)}</div>
+        <div style="flex:1;">
+          <div style="font-size:0.65rem;color:var(--muted);margin-bottom:3px;">Your level</div>
+          <div class="skill-bar-wrap"><div class="skill-bar" style="width:${s.mine}%;background:var(--accent);"></div></div>
+          <div style="font-size:0.65rem;color:var(--muted);margin-top:5px;margin-bottom:3px;">Market demand</div>
+          <div class="skill-bar-wrap"><div class="skill-bar" style="width:${s.market}%;background:var(--green);"></div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end;width:70px;">
+          ${gapTag}
+          <button onclick="deleteSkill(${s.id})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.75rem;">🗑️</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const gaps = data.skills.filter(s => s.market - s.mine > 25).sort((a,b) => (b.market - b.mine) - (a.market - a.mine));
+  if (gaps.length) {
+    learning.innerHTML = gaps.map(s => `
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border-radius:10px;margin-bottom:8px;">
+        <span style="font-size:1.2rem;">📚</span>
+        <div>
+          <div style="font-weight:600;font-size:0.88rem;">${esc(s.name)}</div>
+          <div style="font-size:0.75rem;color:var(--muted);">Market demand: ${s.market}% | Your level: ${s.mine}% | Gap: ${s.market - s.mine}%</div>
+        </div>
+        <span class="tag tag-red" style="margin-left:auto;">Priority</span>
+      </div>
+    `).join('');
+  } else {
+    learning.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:0.85rem;">🎉 No major skill gaps! Keep it up.</div>`;
+  }
+}
+
+function deleteSkill(id) {
+  data.skills = data.skills.filter(s => s.id !== id);
+  save(); renderSkillGap();
+}
+
+// ========== DASHBOARD ==========
+let chartStatus, chartType;
+
+function renderDashboard() {
+  const apps = data.apps;
+  const total = apps.length;
+  const interviews = apps.filter(a => ['Interview 1','Interview 2','Final Interview','Phone Screen'].includes(a.status)).length;
+  const offers = apps.filter(a => a.status === 'Offer').length;
+  const rejected = apps.filter(a => a.status === 'Rejected').length;
+  const rate = total ? Math.round(interviews / total * 100) : 0;
+
+  document.getElementById('d-total').textContent = total;
+  document.getElementById('d-interviews').textContent = interviews;
+  document.getElementById('d-offers').textContent = offers;
+  document.getElementById('d-rejected').textContent = rejected;
+  document.getElementById('d-rate').textContent = rate + '%';
+
+  // Status chart
+  const statuses = ['Interested','Applied','Assessment','Phone Screen','Interview 1','Interview 2','Final Interview','Offer','Rejected','Withdrawn'];
+  const statusCounts = statuses.map(s => apps.filter(a => a.status === s).length);
+  const ctx1 = document.getElementById('chart-status').getContext('2d');
+  if (chartStatus) chartStatus.destroy();
+  chartStatus = new Chart(ctx1, {
+    type: 'doughnut',
+    data: {
+      labels: statuses.filter((_,i) => statusCounts[i] > 0),
+      datasets: [{ data: statusCounts.filter(c => c > 0), backgroundColor: ['#8b5cf6','#3b82f6','#f59e0b','#fb923c','#22d3ee','#818cf8','#c084fc','#10b981','#ef4444','#6b7280'], borderWidth: 0 }]
+    },
+    options: { plugins: { legend: { labels: { color: '#9ca3af', font: { size: 11 } } } }, cutout: '65%' }
+  });
+
+  // Type chart
+  const types = ['Remote','Hybrid','Onsite'];
+  const typeCounts = types.map(t => apps.filter(a => a.type === t).length);
+  const ctx2 = document.getElementById('chart-type').getContext('2d');
+  if (chartType) chartType.destroy();
+  chartType = new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: types,
+      datasets: [{ data: typeCounts, backgroundColor: ['#6c63ff','#10b981','#f59e0b'], borderRadius: 8, borderWidth: 0 }]
+    },
+    options: {
+      plugins: { legend: { display: false } },
+      scales: { x: { ticks: { color: '#9ca3af' }, grid: { display: false } }, y: { ticks: { color: '#9ca3af', stepSize: 1 }, grid: { color: '#1d2535' } } }
+    }
+  });
+
+  // Follow-ups on dashboard
+  const today = new Date();
+  let urgentFU = [];
+  data.apps.forEach(a => {
+    if (!a.date) return;
+    const days = Math.floor((today - new Date(a.date)) / (1000*60*60*24));
+    if (a.status === 'Applied' && days >= 7) urgentFU.push(`📧 Follow up with <strong>${esc(a.company)}</strong> — ${days} days since applying`);
+  });
+
+  const dfEl = document.getElementById('dash-followups');
+  if (urgentFU.length) {
+    dfEl.innerHTML = urgentFU.map(f => `<div style="padding:10px 14px;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;margin-bottom:8px;font-size:0.83rem;">${f}</div>`).join('');
+  } else {
+    dfEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:0.83rem;">✅ No urgent follow-ups right now!</div>`;
+  }
+}
+
+// ========== BADGES ==========
+function updateBadges() {
+  document.getElementById('app-badge').textContent = data.apps.length;
+  const today = new Date();
+  let fu = 0;
+  data.apps.forEach(a => {
+    if (!a.date) return;
+    const days = Math.floor((today - new Date(a.date)) / (1000*60*60*24));
+    if (a.status === 'Applied' && days >= 7) fu++;
+  });
+  data.contacts.forEach(c => {
+    if (!c.next) return;
+    if (new Date(c.next) <= today) fu++;
+  });
+  document.getElementById('fu-badge').textContent = fu;
+}
+
+// ========== HELPERS ==========
+function fmtDate(d) {
+  if (!d) return '—';
+  const dt = new Date(d + 'T00:00:00');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+let toastTimer;
+function showToast(msg) {
+  let t = document.querySelector('.toast');
+  if (t) t.remove();
+  t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.classList.add('hide'); setTimeout(() => t.remove(), 300); }, 2500);
+}
+
+// ========== INIT ==========
+renderDashboard();
+updateBadges();
+</script>
+</body>
+</html>
